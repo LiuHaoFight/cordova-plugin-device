@@ -20,13 +20,9 @@
  */
 
 var argscheck = require('cordova/argscheck');
-var channel = require('cordova/channel');
 var exec = require('cordova/exec');
 var cordova = require('cordova');
 
-channel.createSticky('onCordovaInfoReady');
-// Tell cordova channel to wait on the CordovaInfoReady event
-channel.waitForInitialization('onCordovaInfoReady');
 
 /**
  * This represents the mobile device, and provides properties for inspecting the model, version, UUID of the
@@ -34,52 +30,6 @@ channel.waitForInitialization('onCordovaInfoReady');
  * @constructor
  */
 function Device () {
-    this.available = false;
-    this.platform = null;
-    this.version = null;
-    this.uuid = null;
-    this.cordova = null;
-    this.model = null;
-    this.manufacturer = null;
-    this.isVirtual = null;
-    this.serial = null;
-    this.isiOSAppOnMac = null;
-
-    var me = this;
-
-    channel.onCordovaReady.subscribe(function () {
-        me.getInfo(
-            function (info) {
-                // ignoring info.cordova returning from native, we should use value from cordova.version defined in cordova.js
-                // TODO: CB-5105 native implementations should not return info.cordova
-                var buildLabel = cordova.version;
-                me.available = true;
-                me.platform = info.platform;
-                me.version = info.version;
-                me.uuid = info.uuid;
-                me.cordova = buildLabel;
-                me.model = info.model;
-                me.isVirtual = info.isVirtual;
-                // isiOSAppOnMac is iOS specific. If defined, it will be appended.
-                if (info.isiOSAppOnMac !== undefined) {
-                    me.isiOSAppOnMac = info.isiOSAppOnMac;
-                }
-                me.manufacturer = info.manufacturer || 'unknown';
-                me.serial = info.serial || 'unknown';
-
-                // SDK Version is Android specific. If defined, it will be appended.
-                if (info.sdkVersion !== undefined) {
-                    me.sdkVersion = info.sdkVersion;
-                }
-
-                channel.onCordovaInfoReady.fire();
-            },
-            function (e) {
-                me.available = false;
-                console.error('[ERROR] Error initializing cordova-plugin-device: ' + e);
-            }
-        );
-    });
 }
 
 /**
@@ -90,6 +40,7 @@ function Device () {
  */
 Device.prototype.getInfo = function (successCallback, errorCallback) {
     argscheck.checkArgs('fF', 'Device.getInfo', arguments);
+    console.log('Device getInfo');
     exec(successCallback, errorCallback, 'Device', 'getDeviceInfo', []);
 };
 
